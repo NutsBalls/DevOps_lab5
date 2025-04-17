@@ -25,17 +25,28 @@ def test_get_existed_user():
     assert response.json() == users[0]
 
 def test_get_unexisted_user():
-    '''Получение несуществующего пользователя'''
+    response = client.get("api/v1/user", params={"email": "unexisting@mail.ru"})
+    assert response.status_code == 404
+    assert response.json() == {"detail": "User not found"}
     pass
 
 def test_create_user_with_valid_email():
-    '''Создание пользователя с уникальной почтой'''
-    pass
+    already_existed = len(users)
+    response = client.post("api/v1/user", json={"name": "vlad", "email": "eliseenkoV@mail.ru"})
+    assert response.status_code == 201
+    assert response.json() == already_existed + 1
 
 def test_create_user_with_invalid_email():
-    '''Создание пользователя с почтой, которую использует другой пользователь'''
+    already_existed = len(users)
+    response = client.post("api/v1/user", json={"name": "vlad_1", "email": "eliseenkoV@mail.ru"})
+    assert response.status_code == 409
+    assert response.json() == {'detail': 'User with this email already exists'}
     pass
 
 def test_delete_user():
-    '''Удаление пользователя'''
+    response = client.delete("api/v1/user", params={"email": "eliseenkoV@mail.ru"})
+    assert response.status_code == 204
+
+    response = client.get("api/v1/user", params = {"email": "eliseenkoV@mail.ru"})
+    assert response.status_code == 404
     pass
